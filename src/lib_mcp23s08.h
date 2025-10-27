@@ -19,7 +19,7 @@ extern "C" {
 // MCP23S08 Device
 #define MCP_08S_PIN_MAX         0x07
 #define MCP_08S_REG_MAX         0x0A
-#define MCP_08S_ADDR_MAX        0x04
+#define MCP_08S_ADDR_MAX        0x03
 #define MCP_08S_BASE            0x40
 #define MCP_08S_WRITE_CMD       0x00
 #define MCP_08S_READ_CMD        0x01

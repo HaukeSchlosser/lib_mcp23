@@ -1,6 +1,6 @@
 # MCP23S0x SPI Library
 
-A lightweight, high-performance, and robust C/C++ library for the **Microchip MCP23S08** and **MCP23S09** 8-bit GPIO expanders over **SPI**.
+A lightweight, high-performance, and robust C/C++ library for the **Microchip MCP23S08**, **MCP23S09**, **MCP230009** 8-bit GPIO expanders over **SPI** and **I2C**.
 
 Designed for embedded systems, Raspberry Pi, and Linux-based microcontrollers â€” providing a clean abstraction layer and shared libraries for seamless integration.
 
@@ -8,12 +8,13 @@ Designed for embedded systems, Raspberry Pi, and Linux-based microcontrollers â€
 
 ## Features
 
-- Supports **MCP23S08** and **MCP23S09** devices  
-- Built as modular shared libraries (`libmcp23s08.so`, `libmcp23s09.so`)  
+- Supports **MCP23S08**, **MCP23S09** and **MCP23009** devices  
+- Built as modular shared libraries (`libmcp23s08.so`, `libmcp23s09.so`, `libmcp23009.so`)  
 - Clean and minimal **C API** for easy integration into existing projects  
 - Compatible with **C and C++** applications  
 - Includes example test programs to verify SPI communication  
 - Fully compatible with **Linux SPI driver (spidev)**
+- Fully compatible with **Linux I2C driver** 
 
 ---
 
@@ -42,8 +43,10 @@ Result:
 ```bash
 /usr/local/lib/libmcp23s08.so
 /usr/local/lib/libmcp23s09.so
+/usr/local/lib/libmcp23009.so
 /usr/local/include/lib_mcp23s08.h
 /usr/local/include/lib_mcp23s09.h
+/usr/local/include/lib_mcp23009.h
 ```
 
 ---
@@ -53,7 +56,7 @@ Result:
 #### Compile own Program
 Link application against one or both MCP23S0x libraries:
 ```bash
-gcc -o <program_name> <program_name>.c -I/usr/local/include -L/usr/local/lib -lmcp23s08 -lmcp23s09
+gcc -o <program_name> <program_name>.c -I/usr/local/include -L/usr/local/lib -lmcp23s08 -lmcp23s09 -lmcp23009
 ```
 
 If system does not automatically load libraries from /usr/local/lib, add:
@@ -63,7 +66,7 @@ If system does not automatically load libraries from /usr/local/lib, add:
 
 Full example:
 ```bash
-gcc -o my_app main.c -I/usr/local/include -L/usr/local/lib -lmcp23s08 -lmcp23s09 -Wl,-rpath,/usr/local/lib
+gcc -o my_app main.c -I/usr/local/include -L/usr/local/lib -lmcp23s08 -lmcp23s09 -lmcp23009 -Wl,-rpath,/usr/local/lib
 ```
 
 ----
