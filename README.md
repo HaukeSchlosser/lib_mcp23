@@ -17,6 +17,21 @@ A C library for interfacing with Microchip's MCP23 series GPIO expanders on Linu
 - **MCP23S09**: 8-bit SPI GPIO expander
 - **MCP23009**: 8-bit I2C GPIO expander
 
+## Requirements  
+
+### System  
+- Linux kernel ≥ 5.4 (GPIO UAPI, spidev, i2c-dev supported)  
+- Root or udev access to:
+  - `/dev/spidevX.Y` (for SPI variants)  
+  - `/dev/i2c-X` (for I²C variants)  
+  - `/dev/gpiochipN` (for interrupt handling)  
+
+### Build dependencies  
+- `gcc` or `clang` (C11 compatible)  
+- `make` (GNU Make 3.8+)  
+- Linux kernel headers (for `<linux/spi/spidev.h>` and `<linux/gpio.h>`)  
+- Standard C headers (`stdio.h`, `stdlib.h`, `string.h`, `unistd.h`, etc.)
+
 ## Installation
 
 ```bash
