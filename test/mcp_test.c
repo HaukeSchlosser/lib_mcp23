@@ -1,3 +1,73 @@
+/*
+ * mcp23_test.c — Example/Test program for MCP23x0x I/O expanders (SPI/I²C)
+ *
+ * Supported variants:
+ *   - mcp23s08  (SPI, 8-bit, optional HAEN addressing)
+ *   - mcp23s09  (SPI, 8-bit, without address decoder)
+ *   - mcp23009  (I²C, 8-bit)
+ *
+ * Available operations:
+ *   - write      : Configures all pins as outputs and demonstrates writing:
+ *                  * Blinks all pins (OLAT 0x00/0xFF)
+ *                  * Then blinks pin 0 individually using mcp_write_pin()
+ *   - read       : Configures all pins as inputs with pull-ups (IODIR=0xFF, GPPU=0xFF)
+ *                  * Periodically reads the full port (GPIO) and pin 0
+ *                  * Prints values to stdout
+ *   - interrupt  : Configures pin-change interrupts (MCP_INT_ENABLE, MCP_CHANGE_ANY)
+ *                  * Uses Linux GPIO events (gpiochip) on FALLING_EDGE
+ *                  * Reads INTF/INTCAP to identify triggered pins and their states
+ *
+ * System / Driver requirements:
+ *   - Linux with spidev and/or i2c-dev and GPIO UAPI (linux/gpio.h)
+ *   - User permissions for /dev/spidevX.Y, /dev/i2c-X, and /dev/gpiochipN
+ *   - External library/header: <mcp23/mcp23.h> (hardware abstraction layer)
+ *
+ * Important constants:
+ *   - CHIPDEV  : Path to the GPIO chip device (default: "/dev/gpiochip0")
+ *   - INT_LINE : GPIO line offset for MCP INT pin (default: 25)
+ *
+ * Usage:
+ *   mcp23_test <variant> <operation>
+ *   Examples:
+ *     ./mcp23_test mcp23s08 write
+ *     ./mcp23_test mcp23s09 read
+ *     ./mcp23_test mcp23009 interrupt
+ *
+ * Default configurations per variant:
+ *   - mcp23s08 : SPI mode 0, low speed, bus=0, cs=0, addr=0, HAEN disabled
+ *   - mcp23s09 : SPI mode 0, low speed, bus=0, cs=0
+ *   - mcp23009 : I²C bus=1, low speed, addr=0
+ *   Adjust bus/CS/address values to match your hardware setup.
+ *
+ * Operation details:
+ *   - write:
+ *       mcp_init() → IODIR=0x00 (all outputs) → OLAT=0xFF (all high/LEDs off)
+ *       Infinite loop toggling OLAT 0x00/0xFF, then toggling pin 0 individually.
+ *   - read:
+ *       mcp_init() → IODIR=0xFF (all inputs) → GPPU=0xFF (pull-ups enabled)
+ *       Infinite loop reading GPIO register and pin 0; printing both values.
+ *   - interrupt:
+ *       mcp_init() → enable interrupts on all pins → dummy read of INTCAP
+ *       Open GPIO event FD on INT_LINE (falling edge)
+ *       On event: read INTF/INTCAP, identify triggered pins (using ctz loop) & states.
+ *
+ * Return values:
+ *   0  success
+ *   1  failure (init/IO error, invalid argument, etc.)
+ *
+ * Build example:
+ *   gcc -O2 -Wall -o mcp23_test mcp23_test.c \
+ *       -lmcp23
+ *   (add -I/-L paths as required for mcp23 library and kernel headers)
+ *
+ * Notes:
+ *   - Root access or proper udev rules may be required for SPI/I²C/GPIO access.
+ *   - INT_LINE must match the actual interrupt pin wiring (consider voltage levels).
+ *   - The "write" operation runs indefinitely; use only with safe loads.
+ *   - Functions mcp_init/mcp_write/mcp_read/... must be provided by the mcp23 library.
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
