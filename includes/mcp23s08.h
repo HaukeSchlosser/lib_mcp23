@@ -1,56 +1,26 @@
 #ifndef MCP23S08_H
 #define MCP23S08_H
 
+#include "mcp23.h"
+#include "defines.h"
 #include <stdint.h>
-#include <linux/spi/spidev.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// MCP23S08 SPI Defines
-#define MCP_08S_DELAY           0x00
-#define MCP_08S_WDELAY          0x00
-#define MCP_08S_BPW             0x08
-#define MCP_08S_SPEED_SLOW      100000u     // 100 kHz
-#define MCP_08S_SPEED_DEFAULT   1000000u    // 1 MHz
-#define MCP_08S_SPEED_FAST      4000000u    // 4 MHz
-#define MCP_08S_SPEED_MAX       10000000u   // 10 MHz
-// MCP23S08 Device
-#define MCP_08S_PIN_MAX         0x07
-#define MCP_08S_REG_MAX         0x0A
-#define MCP_08S_ADDR_MAX        0x03
-#define MCP_08S_BASE            0x40
-#define MCP_08S_WRITE_CMD       0x00
-#define MCP_08S_READ_CMD        0x01
-// MSCP23S08 Interrupt Commands
-#define MCP_08S_INT_DISABLE     0x00
-#define MCP_08S_INT_ENABLE      0x01
-#define MCP_08S_CHANGE_ANY      0x00
-#define MCP_08S_COMPARE_DEFVAL  0x01
-// MSCP23S08 Register Addresses
-#define MCP_08S_IODIR           0x00        // I/O Direction Register
-#define MCP_08S_IPOL            0x01        // Input Polarity Port Register
-#define MCP_08S_GPINTEN         0x02        // Interrupt-on-Change Control Register
-#define MCP_08S_DEFVAL          0x03        // Default Compare Register
-#define MCP_08S_INTCON          0x04        // Interrupt Control Register
-#define MCP_08S_IOCON           0x05        // Configuration Register
-#define MCP_08S_GPPU            0x06        // Pull-up Resistor Register
-#define MCP_08S_INTF            0x07        // Interrupt Flag Register
-#define MCP_08S_INTCAP          0x08        // Interrupt Captured Register
-#define MCP_08S_GPIO            0x09        // General Purpose I/O Register
-#define MCP_08S_OLAT            0x0A        // Output Latch Register
+#define MCP_08S_ADDR_MAX    0x03
+#define MCP_08S_BASE        0x40
+#define MCP_08S_WRITE_CMD   0x00
+#define MCP_08S_READ_CMD    0x01
 
-#define MCP_08S_HAEN_DISABLE    0x00
-#define MCP_08S_HAEN_ENABLE     0x01
-
-typedef struct {
+struct mcp23s08 {
     int fd;
     uint32_t speed_hz;
     uint8_t  haen_enabled;
     uint8_t  mode;
     uint8_t  address;
-} mcp23s08_t;
+};
 
 /**
  * @brief Opens and configures an SPI device file for MCP23S08 communication.

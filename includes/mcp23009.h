@@ -1,47 +1,24 @@
 #ifndef MCP23009_H
 #define MCP23009_H
 
+#include "mcp23.h"
+#include "defines.h"
 #include <stdint.h>
-#include <linux/i2c-dev.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// MCP23009 Defines
-#define MCP_009_SPEED_SLOW      100000u     // 100 kHz
-#define MCP_009_SPEED_DEFAULT   400000u     // 400 kHz
-#define MCP_009_SPEED_FAST      3400000u    // 3.4 MHz
-// MCP23009 Device
-#define MCP_009_PIN_MAX         0x07
-#define MCP_009_REG_MAX         0x0A
-#define MCP_009_ADDR_MAX        0x07
-#define MCP_009_BASE            0x20
-#define MCP_009_WRITE_CMD       0x00
-#define MCP_009_READ_CMD        0x01
-// MCP23009 Interrupt Commands
-#define MCP_009_INT_DISABLE     0x00
-#define MCP_009_INT_ENABLE      0x01
-#define MCP_009_CHANGE_ANY      0x00
-#define MCP_009_COMPARE_DEFVAL  0x01
-// MCP23009 Register Addresses
-#define MCP_009_IODIR           0x00        // I/O Direction Register
-#define MCP_009_IPOL            0x01        // Input Polarity Port Register
-#define MCP_009_GPINTEN         0x02        // Interrupt-on-Change Control Register
-#define MCP_009_DEFVAL          0x03        // Default Compare Register
-#define MCP_009_INTCON          0x04        // Interrupt Control Register
-#define MCP_009_IOCON           0x05        // Configuration Register
-#define MCP_009_GPPU            0x06        // Pull-up Resistor Register
-#define MCP_009_INTF            0x07        // Interrupt Flag Register
-#define MCP_009_INTCAP          0x08        // Interrupt Captured Register
-#define MCP_009_GPIO            0x09        // General Purpose I/O Register
-#define MCP_009_OLAT            0x0A        // Output Latch Register
+#define MCP_009_ADDR_MAX    0x07
+#define MCP_009_BASE        0x20
+#define MCP_009_WRITE_CMD   0x00
+#define MCP_009_READ_CMD    0x01
 
-typedef struct {
+struct mcp23009 {
     int fd;
     uint32_t speed_hz;
     uint8_t  address;
-} mcp23009_t;
+};
 
 /**
  * @brief Opens and configures an I2C device file for MCP23009 communication.

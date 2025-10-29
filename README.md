@@ -1,122 +1,132 @@
-# MCP23S0x SPI Library
+# MCP23 GPIO Expander Library
 
-A lightweight, high-performance, and robust C/C++ library for the **Microchip MCP23S08**, **MCP23S09**, **MCP230009** 8-bit GPIO expanders over **SPI** and **I2C**.
-
-Designed for embedded systems, Raspberry Pi, and Linux-based microcontrollers — providing a clean abstraction layer and shared libraries for seamless integration.
-
----
+A C library for interfacing with Microchip's MCP23 series GPIO expanders on Linux systems. Supports MCP23S08 (SPI), MCP23S09 (SPI), and MCP23009 (I2C) devices.
 
 ## Features
 
-- Supports **MCP23S08**, **MCP23S09** and **MCP23009** devices  
-- Built as modular shared libraries (`libmcp23s08.so`, `libmcp23s09.so`, `libmcp23009.so`)  
-- Clean and minimal **C API** for easy integration into existing projects  
-- Compatible with **C and C++** applications  
-- Includes example test programs to verify SPI communication  
-- Fully compatible with **Linux SPI driver (spidev)**
-- Fully compatible with **Linux I2C driver** 
+- Unified API for different MCP23 variants
+- Support for both SPI and I2C interfaces
+- GPIO operations (read/write individual pins or full port)
+- Interrupt handling capabilities
+- Configurable bus speeds and addresses
+- Thread-safe implementation
 
----
+## Supported Devices
+
+- **MCP23S08**: 8-bit SPI GPIO expander
+- **MCP23S09**: 8-bit SPI GPIO expander
+- **MCP23009**: 8-bit I2C GPIO expander
 
 ## Installation
 
-#### 1. Clone the Repository
-
 ```bash
-git clone https://github.com/HaukeSchlosser/lib_mcp23s0x.git
-cd lib_mcp23s0x
-```
-
-#### 2. Build the Libraries
-Builds the shared libraries under build/ and example test programs under test/out/:
-```bash
+git clone https://github.com/HaukeSchlosser/lib_mcp23.git
+cd lib_mcp23
 make
-```
-
-#### 3. Install System-Wide
-Installs headers and shared libraries into /usr/local:
-```bash
 sudo make install
 ```
 
-Result:
-```bash
-/usr/local/lib/libmcp23s08.so
-/usr/local/lib/libmcp23s09.so
-/usr/local/lib/libmcp23009.so
-/usr/local/include/lib_mcp23s08.h
-/usr/local/include/lib_mcp23s09.h
-/usr/local/include/lib_mcp23009.h
-```
+The library will be installed to `/usr/local/lib` and headers to `/usr/local/include/mcp23`.
 
----
+### Compilation
+
+```bash
+gcc -o your_program your_program.c -lmcp23
+```
 
 ## Usage
 
-#### Compile own Program
-Link application against one or both MCP23S0x libraries:
-```bash
-gcc -o <program_name> <program_name>.c -I/usr/local/include -L/usr/local/lib -lmcp23s08 -lmcp23s09 -lmcp23009
-```
+### Including the Library
 
-If system does not automatically load libraries from /usr/local/lib, add:
-```bash
--Wl,-rpath,/usr/local/lib
-```
-
-Full example:
-```bash
-gcc -o my_app main.c -I/usr/local/include -L/usr/local/lib -lmcp23s08 -lmcp23s09 -lmcp23009 -Wl,-rpath,/usr/local/lib
-```
-
-----
-
-## Example
 ```c
-#include <stdio.h>
-#include "lib_mcp23s08.h"
+#include <mcp23/mcp23.h>
+```
 
-int main(void) {
-    printf("Initializing MCP23S08...\n");
-    if (mcp23s08_init(0) == 0)
-        printf("MCP23S08 initialized successfully!\n");
-    else
-        printf("Initialization failed.\n");
-    return 0;
+### Basic Example
+
+```c
+#include <mcp23/mcp23.h>
+
+// Initialize device configuration
+mcp_cfg_t cfg = MCP_CFG_I2C_23009(1, 400000, 0x20); // I2C bus 1, 400kHz, addr 0x20
+mcp_dev_t dev;
+
+// Initialize device
+if (mcp_init(&dev, &cfg) < 0) {
+    fprintf(stderr, "Failed to initialize device\n");
+    return 1;
 }
+
+// Write to GPIO port
+mcp_write(&dev, MCP_GPIO, 0xFF);
+
+// Read from GPIO port
+int16_t value = mcp_read(&dev, MCP_GPIO);
+
+// Cleanup
+mcp_close(&dev);
 ```
 
-Compile and run:
+### Configuration Macros
+
+- `MCP_CFG_SPI_23S08(bus, cs, mode, speed, addr, haen)`
+- `MCP_CFG_SPI_23S09(bus, cs, mode, speed)`
+- `MCP_CFG_I2C_23009(bus, speed, addr)`
+
+### API Functions
+
+- `mcp_init()`: Initialize device
+- `mcp_close()`: Close device connection
+- `mcp_read()`: Read from register
+- `mcp_write()`: Write to register
+- `mcp_read_pin()`: Read single pin
+- `mcp_write_pin()`: Write to single pin
+- `mcp_interrupt()`: Configure interrupts
+
+## Testing
+
+The project includes a test program demonstrating basic functionality:
+
 ```bash
-gcc -o test_mcp23s08 test_mcp23s08.c -lmcp23s08
-./test_mcp23s08
+cd test
+make
+./build/mcp_test_read <variant> <operation>
 ```
 
----
+Supported variants:
+- mcp23s08
+- mcp23s09
+- mcp23009
 
-## Maintenance
+Operations:
+- read: Continuous GPIO read
+- write: LED blinking demo
+- interrupt: Interrupt handling demo
 
-#### Uninstall
-```bash
-sudo make uninstall
-```
+## Register Map
 
-#### Clean Build Files
-```bash
-make clean
-```
+| Address | Register | Description |
+|---------|----------|-------------|
+| 0x00    | IODIR    | I/O Direction |
+| 0x01    | IPOL     | Input Polarity |
+| 0x02    | GPINTEN  | Interrupt-on-change |
+| 0x03    | DEFVAL   | Default Compare |
+| 0x04    | INTCON   | Interrupt Control |
+| 0x05    | IOCON    | Configuration |
+| 0x06    | GPPU     | Pull-up Resistor |
+| 0x07    | INTF     | Interrupt Flag |
+| 0x08    | INTCAP   | Interrupt Capture |
+| 0x09    | GPIO     | Port Register |
+| 0x0A    | OLAT     | Output Latch |
 
----
+## License
 
-#### License
-This project is licensed under the GPL-3.0 License.
+This project is licensed under the GPL-3.0 License. 
 
----
+## Contributing
 
-#### Author
-Developed and maintained by Hauke Schlosser
+Contributions are welcome! Please feel free to submit pull requests.
 
---- 
+## Authors
 
-#### Keywords
-SPI, MCP23S08, MCP23S09, Microchip, GPIO Expander, C Library, Raspberry Pi, Embedded Linux, spidev, I/O Control, Shared Library, Device Driver, Hardware Abstraction Layer, HAL
+Hauke Schlosser

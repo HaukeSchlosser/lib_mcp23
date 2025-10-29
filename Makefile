@@ -1,60 +1,45 @@
 CC       = gcc
 CFLAGS   = -Wall -O2 -fPIC
-LD       = $(CC)
-LDFLAGS  = -shared
+LDFLAGS  = -shared -Wl,--no-undefined
+INCLUDES = -Iincludes
 
 SRC_DIR   = src
 BUILD_DIR = build
+TARGET    = $(BUILD_DIR)/libmcp23.so
 
-LIBS      = mcp23s08 mcp23s09 mcp23009
+SRCS = \
+  $(SRC_DIR)/mcp23.c \
+  $(SRC_DIR)/mcp23s08.c \
+  $(SRC_DIR)/mcp23s09.c \
+  $(SRC_DIR)/mcp23009.c \
+  $(SRC_DIR)/mcp_spi.c
 
-SRCS      = $(addprefix $(SRC_DIR)/lib_, $(addsuffix .c, $(LIBS)))
-OBJS      = $(addprefix $(BUILD_DIR)/lib_, $(addsuffix .o, $(LIBS)))
+INSTALL_LIB_DIR = /usr/local/lib
+INSTALL_INC_DIR = /usr/local/include/mcp23
 
-TARGETS_US = $(addprefix $(BUILD_DIR)/lib_, $(addsuffix .so, $(LIBS)))
-TARGETS_NO = $(addprefix $(BUILD_DIR)/lib,  $(addsuffix .so, $(LIBS)))
-TARGETS    = $(TARGETS_US) $(TARGETS_NO)
+.PHONY: all clean install uninstall
 
-HEADERS   = $(addprefix $(SRC_DIR)/lib_, $(addsuffix .h, $(LIBS)))
-
-PREFIX     = /usr/local
-LIBDIR     = $(PREFIX)/lib
-INCLUDEDIR = $(PREFIX)/include
-
-.PHONY: all install uninstall clean
-
-all: $(TARGETS)
+all: $(TARGET)
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-$(BUILD_DIR)/lib_%.o: $(SRC_DIR)/lib_%.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+$(TARGET): $(SRCS) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) $(LDFLAGS) -o $@ $(SRCS)
 
-$(BUILD_DIR)/lib_%.so: $(BUILD_DIR)/lib_%.o
-	$(LD) $(LDFLAGS) -o $@ $<
-
-$(BUILD_DIR)/lib%.so: $(BUILD_DIR)/lib_%.o
-	$(LD) $(LDFLAGS) -o $@ $<
-
-install: $(TARGETS)
-	@echo "Use 'sudo make install' if you need root permissions"
-	mkdir -p "$(DESTDIR)$(LIBDIR)" "$(DESTDIR)$(INCLUDEDIR)"
-	@for lib in $(LIBS); do \
-		install -m 0755 "$(BUILD_DIR)/lib_$${lib}.so" "$(DESTDIR)$(LIBDIR)/lib_$${lib}.so"; \
-		install -m 0755 "$(BUILD_DIR)/lib$${lib}.so"  "$(DESTDIR)$(LIBDIR)/lib$${lib}.so"; \
-		install -m 0644 "$(SRC_DIR)/lib_$${lib}.h"    "$(DESTDIR)$(INCLUDEDIR)/lib_$${lib}.h"; \
-		echo "Installed: $(DESTDIR)$(LIBDIR)/lib_$${lib}.so and lib$${lib}.so"; \
-	done
+install: $(TARGET)
+	sudo mkdir -p $(INSTALL_LIB_DIR) $(INSTALL_INC_DIR)
+	sudo cp $(TARGET) $(INSTALL_LIB_DIR)
+	sudo cp includes/*.h $(INSTALL_INC_DIR)
+	sudo ldconfig
+	@echo "Library installed to $(INSTALL_LIB_DIR)"
+	@echo "Headers  installed to $(INSTALL_INC_DIR)"
 
 uninstall:
-	@echo "Use 'sudo make uninstall' if you need root permissions"
-	@for lib in $(LIBS); do \
-		rm -f "$(DESTDIR)$(LIBDIR)/lib_$${lib}.so"; \
-		rm -f "$(DESTDIR)$(LIBDIR)/lib$${lib}.so"; \
-		rm -f "$(DESTDIR)$(INCLUDEDIR)/lib_$${lib}.h"; \
-		echo "Uninstalled: $(DESTDIR)$(LIBDIR)/lib_$${lib}.so and lib$${lib}.so"; \
-	done
+	sudo rm -f $(INSTALL_LIB_DIR)/$(notdir $(TARGET))
+	sudo rm -rf $(INSTALL_INC_DIR)
+	sudo ldconfig
+	@echo "Library uninstalled"
 
 clean:
 	rm -rf $(BUILD_DIR)
