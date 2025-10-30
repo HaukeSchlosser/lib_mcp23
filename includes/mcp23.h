@@ -129,6 +129,16 @@ int8_t  mcp_read_pin(mcp_dev_t *dev, uint8_t reg, uint8_t pin);
  */
 int8_t mcp_interrupt(mcp_dev_t *dev, uint8_t enable, uint8_t bitmask, uint8_t interrupt_mode);
 
+/**
+ * @brief Enables or disables LED on all pins of the MCP23 device.
+ *
+ * @param dev       Pointer to the MCP23 device handle.
+ * @param enable    Enable or disable LED (MCP_LED_ENABLE or MCP_LED_DISABLE).
+ * 
+ * @return int8_t   Returns 0 on success, or -1 on failure.
+ */
+int8_t mcp_led(mcp_dev_t *dev, uint8_t enable);
+
 #define MCP_CFG_SPI_23S08(_bus,_cs,_mode,_speed,_addr,_haen) \
     ((mcp_cfg_t){ .variant=MCP_VARIANT_23S08, .bus=SPI, \
         .u.spi={.bus=_bus,.cs=_cs,.mode=_mode,.speed_hz=_speed,.address=_addr,.haen_enabled=_haen}})

@@ -166,6 +166,26 @@ int8_t mcp_interrupt(mcp_dev_t *dev, uint8_t enable, uint8_t bitmask, uint8_t in
     }
 }
 
+int8_t mcp_led(mcp_dev_t *dev, uint8_t enable) {
+    
+    if (!dev) {
+        fprintf(stderr, "[mcp23::mcp_led_blink] ERROR Invalid device handle\n");
+        return -1;
+    }
+
+    switch (dev->variant) {
+        case MCP_VARIANT_23S08:
+            return mcp23s08_led(dev->u.s08, enable);
+        case MCP_VARIANT_23S09:
+            return mcp23s09_led(dev->u.s09, enable);
+        case MCP_VARIANT_23009:
+            return mcp23009_led(dev->u.i09, enable);
+        default:
+            fprintf(stderr, "[mcp23::mcp_led_blink] ERROR Invalid variant\n");
+            return -1;
+    }
+}
+
 int8_t mcp_close(mcp_dev_t *dev) {
 
     if (!dev) {

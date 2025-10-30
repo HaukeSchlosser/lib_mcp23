@@ -88,6 +88,16 @@ int8_t mcp23009_read_pin(mcp23009_t *dev, uint8_t reg, uint8_t pin);
  */
 int8_t mcp23009_interrupt(mcp23009_t *dev, uint8_t enable, uint8_t bitmask, uint8_t interrupt_mode);
 
+/**
+ * @brief Enables or disables LED on all pins of the MCP23009.
+ *
+ * @param dev       Pointer to the MCP23009 device handle.
+ * @param enable    Enable or disable LED (MCP_LED_BLINK_ENABLE or MCP_LED_BLINK_DISABLE).
+ * 
+ * @return int8_t   Returns 0 on success, or -1 on failure.
+ */
+int8_t mcp23009_led(mcp23009_t *dev, uint8_t enable);
+
 #ifdef __cplusplus
 }
 #endif

@@ -16,6 +16,9 @@
  *   - interrupt  : Configures pin-change interrupts (MCP_INT_ENABLE, MCP_CHANGE_ANY)
  *                  * Uses Linux GPIO events (gpiochip) on FALLING_EDGE
  *                  * Reads INTF/INTCAP to identify triggered pins and their states
+ *   - led        : Configures all pins as outputs and enables/disables LED on all pins
+ *                  * Blinks all pins
+ *                  * Enables LED on all pins (OLAT=0x00) or disables (OLAT=0xFF)
  *
  * System / Driver requirements:
  *   - Linux with spidev and/or i2c-dev and GPIO UAPI (linux/gpio.h)
@@ -32,6 +35,7 @@
  *     ./mcp23_test mcp23s08 write
  *     ./mcp23_test mcp23s09 read
  *     ./mcp23_test mcp23009 interrupt
+ *     ./mcp23_test mcp23009 led
  *
  * Default configurations per variant:
  *   - mcp23s08 : SPI mode 0, low speed, bus=0, cs=0, addr=0, HAEN disabled
@@ -50,6 +54,9 @@
  *       mcp_init() → enable interrupts on all pins → dummy read of INTCAP
  *       Open GPIO event FD on INT_LINE (falling edge)
  *       On event: read INTF/INTCAP, identify triggered pins (using ctz loop) & states.
+ *   - led:
+ *      mcp_init() → IODIR=0x00 (all outputs) → OLAT=0xFF (all high/LEDs off)
+ *      Enables LED on all pins (OLAT=0x00) or disables (OLAT=0xFF) based on user input.
  *
  * Return values:
  *   0  success
@@ -90,7 +97,7 @@ static int mcp23_test_write(mcp_dev_t *dev, const mcp_cfg_t *cfg) {
         return -1;
     }
 
-    if (mcp_write(dev, 0x00, 0xFF) < 0) {
+    if (mcp_write(dev, MCP_IODIR, 0xFF) < 0) {
         printf("[mcp23::mcp23_test_write] ERROR Write failed\n");
         return -1;
     }
@@ -237,6 +244,27 @@ static int mcp23_test_interrupt(mcp_dev_t *dev, const mcp_cfg_t *cfg) {
     return 0;
 }
 
+int8_t mcp_test_led(mcp_dev_t *dev, const mcp_cfg_t *cfg) {
+    if (mcp_init(dev, cfg) < 0) {
+        printf("[mcp23::mcp23_test_led] ERROR Init failed\n");
+        return -1;
+    }
+
+    if (mcp_led(dev, MCP_LED_ENABLE) < 0) {
+        printf("[mcp23::mcp23_test_led] ERROR Enable LED failed\n");
+        return -1;
+    }
+
+    sleep(5);
+
+    if (mcp_led(dev, MCP_LED_DISABLE) < 0) {
+        printf("[mcp23::mcp23_test_led] ERROR Disable LED failed\n");
+        return -1;
+    }
+
+    return 0;
+}
+
 static int parse_variant(const char *s, int *out_variant) {
     if (strcmp(s, "mcp23s08") == 0) { *out_variant = MCP_VARIANT_23S08; return 0; }
     if (strcmp(s, "mcp23s09") == 0) { *out_variant = MCP_VARIANT_23S09; return 0; }
@@ -292,6 +320,8 @@ int main(int argc, char *argv[]) {
             return mcp23_test_read(&dev, &cfg) == 0 ? 0 : 1;
         } else if (strcmp(op, "interrupt") == 0) {
             return mcp23_test_interrupt(&dev, &cfg) == 0 ? 0 : 1;
+        } else if (strcmp(op, "led") == 0) {
+            return mcp_test_led(&dev, &cfg) == 0 ? 0 : 1;
         } else {
             fprintf(stderr, "[mcp23_test] ERROR: Unknown operation: %s\n", op);
             return 1;

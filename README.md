@@ -63,7 +63,7 @@ gcc -o your_program your_program.c -lmcp23
 #include <mcp23/mcp23.h>
 
 // Initialize device configuration
-mcp_cfg_t cfg = MCP_CFG_I2C_23009(1, 400000, 0x20); // I2C bus 1, 400kHz, addr 0x20
+mcp_cfg_t cfg = MCP_CFG_I2C_23009(1, MCP_I2C_SPEED_DEFAULT, 0x20);
 mcp_dev_t dev;
 
 // Initialize device
@@ -72,11 +72,14 @@ if (mcp_init(&dev, &cfg) < 0) {
     return 1;
 }
 
-// Write to GPIO port
-mcp_write(&dev, MCP_GPIO, 0xFF);
+// Test wiring - all pins blink for 5s
+mcp_led(&dev, MCP_LED_ENABLE);
 
-// Read from GPIO port
-int16_t value = mcp_read(&dev, MCP_GPIO);
+// Wait 5 seconds
+sleep(5);
+
+// Disable blinking
+mcp_led(&dev, MCP_LED_DISABLE);
 
 // Cleanup
 mcp_close(&dev);
@@ -97,6 +100,7 @@ mcp_close(&dev);
 - `mcp_read_pin()`: Read single pin
 - `mcp_write_pin()`: Write to single pin
 - `mcp_interrupt()`: Configure interrupts
+- `mcp_led()`: Lets all pins blink (convencience method)
 
 ## Testing
 
@@ -117,6 +121,7 @@ Operations:
 - read: Continuous GPIO read
 - write: LED blinking demo
 - interrupt: Interrupt handling demo
+- led: Convenience method to let all pins blink
 
 ## Register Map
 

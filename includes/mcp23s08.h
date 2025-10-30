@@ -95,6 +95,16 @@ int8_t mcp23s08_read_pin(mcp23s08_t *dev, uint8_t reg, uint8_t pin);
  */
 int8_t mcp23s08_interrupt(mcp23s08_t *dev, uint8_t enable, uint8_t bitmask, uint8_t interrupt_mode);
 
+/**
+ * @brief Enables or disables LED on all pins of the MCP23S08.
+ *
+ * @param dev       Pointer to the MCP23S08 device handle.
+ * @param enable    Enable or disable LED (MCP_LED_BLINK_ENABLE or MCP_LED_BLINK_DISABLE).
+ * 
+ * @return int8_t   Returns 0 on success, or -1 on failure.
+ */
+int8_t mcp23s08_led(mcp23s08_t *dev, uint8_t enable);
+
 #ifdef __cplusplus
 }
 #endif

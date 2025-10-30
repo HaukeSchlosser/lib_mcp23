@@ -236,18 +236,18 @@ int8_t mcp23009_write(mcp23009_t *dev, uint8_t reg, uint8_t data) {
 int16_t mcp23009_read(mcp23009_t *dev, uint8_t reg) {
 
     if (!dev) {
-        fprintf(stderr, "[mcp23009_read] ERROR Invalid device handle\n");
+        fprintf(stderr, "[mcp23::mcp23009_read] ERROR Invalid device handle\n");
         return -1;
     }
 
     if (dev->fd < 0) {
-        fprintf(stderr, "[mcp23009_read] ERROR Invalid file descriptor\n");
+        fprintf(stderr, "[mcp23::mcp23009_read] ERROR Invalid file descriptor\n");
         return -1;
     }
 
     if (reg > MCP_REG_MAX) {
-        fprintf(stderr, "[mcp23009_read] ERROR Invalid register address: 0x%02X\n", reg);
-        fprintf(stderr, "[mcp23009_read] ERROR Expected range: 0x00 - 0x%02X\n", MCP_REG_MAX);
+        fprintf(stderr, "[mcp23::mcp23009_read] ERROR Invalid register address: 0x%02X\n", reg);
+        fprintf(stderr, "[mcp23::mcp23009_read] ERROR Expected range: 0x00 - 0x%02X\n", MCP_REG_MAX);
         return -1;
     }
 
@@ -257,7 +257,7 @@ int16_t mcp23009_read(mcp23009_t *dev, uint8_t reg) {
     n = write(dev->fd, &reg, 1);
     if (n != 1) { 
         char msg[64];
-        snprintf(msg, sizeof msg, "[mcp23009_read] write reg=0x%02X", reg);
+        snprintf(msg, sizeof msg, "[mcp23::mcp23009_read] write reg=0x%02X", reg);
         perror(msg); 
         return -1;
     }
@@ -265,7 +265,7 @@ int16_t mcp23009_read(mcp23009_t *dev, uint8_t reg) {
     n = read(dev->fd, &data, 1);
     if (n != 1) { 
         char msg[64];
-        snprintf(msg, sizeof msg, "[mcp23009_read] read reg=0x%02X", reg);
+        snprintf(msg, sizeof msg, "[mcp23::mcp23009_read] read reg=0x%02X", reg);
         perror(msg);
         return -1;
     }
@@ -277,19 +277,19 @@ int16_t mcp23009_read(mcp23009_t *dev, uint8_t reg) {
 int8_t mcp23009_write_pin(mcp23009_t *dev, uint8_t reg, uint8_t pin, uint8_t data) {
 
     if (!dev) {
-        fprintf(stderr, "[mcp23009_write_pin] ERROR Invalid device handle\n");
+        fprintf(stderr, "[mcp23::mcp23009_write_pin] ERROR Invalid device handle\n");
         return -1;
     }
 
     if (pin > MCP_PIN_MAX) {
-        fprintf(stderr, "[mcp23009_write_pin] ERROR Invalid pin: %u\n", pin);
-        fprintf(stderr, "[mcp23009_write_pin] ERROR Expected range: 0x00 - %d\n", MCP_PIN_MAX);
+        fprintf(stderr, "[mcp23::mcp23009_write_pin] ERROR Invalid pin: %u\n", pin);
+        fprintf(stderr, "[mcp23::mcp23009_write_pin] ERROR Expected range: 0x00 - %d\n", MCP_PIN_MAX);
         return -1;
     }
 
     int16_t reg_data = mcp23009_read(dev, reg);
     if (reg_data < 0) {
-        fprintf(stderr, "[mcp23009_write_pin] ERROR: Failed to read register: 0x%02X\n", reg);
+        fprintf(stderr, "[mcp23::mcp23009_write_pin] ERROR: Failed to read register: 0x%02X\n", reg);
         return -1;
     }
 
@@ -308,19 +308,19 @@ int8_t mcp23009_write_pin(mcp23009_t *dev, uint8_t reg, uint8_t pin, uint8_t dat
 int8_t mcp23009_read_pin(mcp23009_t *dev, uint8_t reg, uint8_t pin) {
     
     if (!dev) {
-        fprintf(stderr, "[mcp23009_read_pin] ERROR Invalid device handle\n");
+        fprintf(stderr, "[mcp23::mcp23009_read_pin] ERROR Invalid device handle\n");
         return -1;
     }
 
     if (pin > MCP_PIN_MAX) {
-        fprintf(stderr, "[mcp23009_read_pin] ERROR Invalid pin: %u\n", pin);
-        fprintf(stderr, "[mcp23009_read_pin] ERROR Expected range: 0x00 - %d\n", MCP_PIN_MAX);
+        fprintf(stderr, "[mcp23::mcp23009_read_pin] ERROR Invalid pin: %u\n", pin);
+        fprintf(stderr, "[mcp23::mcp23009_read_pin] ERROR Expected range: 0x00 - %d\n", MCP_PIN_MAX);
         return -1;
     }
 
     int16_t reg_data = mcp23009_read(dev, reg);
     if (reg_data < 0) {
-        fprintf(stderr, "[mcp23009_read_pin] ERROR: Failed to read register: 0x%02X\n", reg);
+        fprintf(stderr, "[mcp23::mcp23009_read_pin] ERROR: Failed to read register: 0x%02X\n", reg);
         return -1;
     }
 
@@ -332,49 +332,97 @@ int8_t mcp23009_read_pin(mcp23009_t *dev, uint8_t reg, uint8_t pin) {
 int8_t mcp23009_interrupt(mcp23009_t *dev, uint8_t enable, uint8_t bitmask, uint8_t interrupt_mode) {
 
     if (!dev) {
-        fprintf(stderr, "[mcp23009_interrupt] ERROR Invalid device handle\n");
+        fprintf(stderr, "[mcp23::mcp23009_interrupt] ERROR Invalid device handle\n");
         return -1;
     }
 
     if (enable != MCP_INT_ENABLE && enable != MCP_INT_DISABLE) {
-        fprintf(stderr, "[mcp23009_interrupt] ERROR Invalid enable value: %u\n", enable);
-        fprintf(stderr, "[mcp23009_interrupt] ERROR Expected values: MCP_009_INT_ENABLE (%u) or MCP_009_INT_DISABLE (%u)\n",
+        fprintf(stderr, "[mcp23::mcp23009_interrupt] ERROR Invalid enable value: %u\n", enable);
+        fprintf(stderr, "[mcp23::mcp23009_interrupt] ERROR Expected values: MCP_009_INT_ENABLE (%u) or MCP_009_INT_DISABLE (%u)\n",
             MCP_INT_ENABLE, MCP_INT_DISABLE);
         return -1;
     }
 
     if (interrupt_mode != MCP_CHANGE_ANY && interrupt_mode != MCP_COMPARE_DEFVAL) {
-        fprintf(stderr, "[mcp23009_interrupt] ERROR Invalid interrupt mode value: %u\n", interrupt_mode);
-        fprintf(stderr, "[mcp23009_interrupt] ERROR Expected values: MCP_009_CHANGE_ANY (%u) or MCP_009_COMPARE_DEFVAL (%u)\n",
+        fprintf(stderr, "[mcp23::mcp23009_interrupt] ERROR Invalid interrupt mode value: %u\n", interrupt_mode);
+        fprintf(stderr, "[mcp23::mcp23009_interrupt] ERROR Expected values: MCP_009_CHANGE_ANY (%u) or MCP_009_COMPARE_DEFVAL (%u)\n",
             MCP_CHANGE_ANY, MCP_COMPARE_DEFVAL);
         return -1;
     }
 
     if (set_iocon_for_interrupt(dev) < 0) {
-        fprintf(stderr, "[mcp23009_interrupt] ERROR Failed to write to IOCON register\n");
+        fprintf(stderr, "[mcp23::mcp23009_interrupt] ERROR Failed to write to IOCON register\n");
         return -1;
     }
 
     if (set_pins_input_and_pullups(dev, bitmask) < 0) {
-        fprintf(stderr, "[mcp23009_interrupt] ERROR Failed to set bitmask\n");
+        fprintf(stderr, "[mcp23::mcp23009_interrupt] ERROR Failed to set bitmask\n");
         return -1;
     }
 
     if (configure_interrupt_mode(dev, bitmask, interrupt_mode) < 0) {
-        fprintf(stderr, "[mcp23009_interrupt] ERROR Failed to configure interrupt mode\n");
+        fprintf(stderr, "[mcp23::mcp23009_interrupt] ERROR Failed to configure interrupt mode\n");
         return -1;
     }
 
     if (update_gpinten(dev, bitmask, enable) < 0) {
-        fprintf(stderr, "[mcp23009_interrupt] ERROR Failed to update GPINTEN register\n");
+        fprintf(stderr, "[mcp23::mcp23009_interrupt] ERROR Failed to update GPINTEN register\n");
         return -1;
     }
 
     if (clear_pending_int(dev) < 0) {
-        fprintf(stderr, "[mcp23009_interrupt] ERROR Failed to clear pending interrupts\n");
+        fprintf(stderr, "[mcp23::mcp23009_interrupt] ERROR Failed to clear pending interrupts\n");
         return -1;
     }
 
     return 0;
 
+}
+
+int8_t mcp23009_led(mcp23009_t *dev, uint8_t enable) {
+
+    if (!dev) {
+        fprintf(stderr, "[mcp23::mcp23009_led] ERROR Invalid device handle\n");
+        return -1;
+    }
+
+    if (enable != MCP_LED_ENABLE && enable != MCP_LED_DISABLE) {
+        fprintf(stderr, "[mcp23::mcp23009_led] ERROR Invalid enable value: %u\n", enable);
+        fprintf(stderr, "[mcp23::mcp23009_led] ERROR Expected values: MCP_LED_BLINK_ENABLE (%u) or MCP_LED_BLINK_DISABLE (%u)\n",
+            MCP_LED_ENABLE, MCP_LED_DISABLE);
+        return -1;
+    }
+
+    // Set all pins as outputs and turn off all LEDs
+    if (mcp23009_write(dev, MCP_IODIR, 0xFF) < 0) {
+        printf("[mcp23::mcp23009_led] ERROR Write failed\n");
+        return -1;
+    }
+
+    if (mcp23009_write(dev, MCP_IODIR, 0x00) < 0) { // IODIR: all output
+        fprintf(stderr, "[mcp23::mcp23009_led] ERROR Write IODIR failed\n");
+        return -1;
+    }
+
+    if (mcp23009_write(dev, MCP_OLAT, 0xFF) < 0) {  // OLAT: all high (LEDs off)
+        fprintf(stderr, "[mcp23::mcp23009_led] ERROR Write OLAT failed\n");
+        return -1;
+    }
+
+    if (enable == MCP_LED_ENABLE) {
+        if (mcp23009_write(dev, MCP_OLAT, 0x00) < 0) {  // OLAT: all low (LEDs on)
+            fprintf(stderr, "[mcp23::mcp23009_led] ERROR Write OLAT failed\n");
+            return -1;
+        }
+        return 0;
+    }
+    if (enable == MCP_LED_DISABLE) {
+        if (mcp23009_write(dev, MCP_OLAT, 0xFF) < 0) {  // OLAT: all low (LEDs on)
+            fprintf(stderr, "[mcp23::mcp23009_led] ERROR Write OLAT failed\n");
+            return -1;
+        }
+        return 0;
+    }
+
+    return 0;
 }

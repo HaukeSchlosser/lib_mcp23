@@ -176,11 +176,6 @@ static int clear_pending_int(mcp23s08_t *dev) {
     return mcp23s08_read(dev, MCP_INTCAP);
 }
 
-
-
-
-
-
 int mcp23s08_init(mcp23s08_t *dev, uint8_t bus, uint8_t cs, 
                  uint8_t spi_mode, uint32_t speed_hz, uint8_t 
                  address, uint8_t haen_enabled) {
@@ -473,6 +468,54 @@ int8_t mcp23s08_interrupt(mcp23s08_t *dev, uint8_t enable, uint8_t bitmask, uint
     if (clear_pending_int(dev) < 0) {
         fprintf(stderr, "[mcp23s08_interrupt] ERROR Failed to clear pending interrupts\n");
         return -1;
+    }
+
+    return 0;
+}
+
+int8_t mcp23s08_led(mcp23s08_t *dev, uint8_t enable) {
+
+    if (!dev) {
+        fprintf(stderr, "[mcp23::mcp23s08_led] ERROR Invalid device handle\n");
+        return -1;
+    }
+
+    if (enable != MCP_LED_ENABLE && enable != MCP_LED_DISABLE) {
+        fprintf(stderr, "[mcp23::mcp23s08_led] ERROR Invalid enable value: %u\n", enable);
+        fprintf(stderr, "[mcp23::mcp23s08_led] ERROR Expected values: MCP_LED_BLINK_ENABLE (%u) or MCP_LED_BLINK_DISABLE (%u)\n",
+            MCP_LED_ENABLE, MCP_LED_DISABLE);
+        return -1;
+    }
+
+    // Set all pins as outputs and turn off all LEDs
+    if (mcp23s08_write(dev, MCP_IODIR, 0xFF) < 0) {
+        printf("[mcp23::mcp23s08_led] ERROR Write failed\n");
+        return -1;
+    }
+
+    if (mcp23s08_write(dev, MCP_IODIR, 0x00) < 0) { // IODIR: all output
+        fprintf(stderr, "[mcp23::mcp23s08_led] ERROR Write IODIR failed\n");
+        return -1;
+    }
+
+    if (mcp23s08_write(dev, MCP_OLAT, 0xFF) < 0) {  // OLAT: all high (LEDs off)
+        fprintf(stderr, "[mcp23::mcp23s08_led] ERROR Write OLAT failed\n");
+        return -1;
+    }
+
+    if (enable == MCP_LED_ENABLE) {
+        if (mcp23s08_write(dev, MCP_OLAT, 0x00) < 0) {  // OLAT: all low (LEDs on)
+            fprintf(stderr, "[mcp23::mcp23s08_led] ERROR Write OLAT failed\n");
+            return -1;
+        }
+        return 0;
+    }
+    if (enable == MCP_LED_DISABLE) {
+        if (mcp23s08_write(dev, MCP_OLAT, 0xFF) < 0) {  // OLAT: all low (LEDs on)
+            fprintf(stderr, "[mcp23::mcp23s08_led] ERROR Write OLAT failed\n");
+            return -1;
+        }
+        return 0;
     }
 
     return 0;
