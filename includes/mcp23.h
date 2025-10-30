@@ -152,6 +152,25 @@ mcp_err_t mcp_led(mcp_dev_t *dev, uint8_t enable);
  */
 const mcp_error_t* mcp_get_error(const mcp_dev_t *dev);
 
+/**
+ * @brief Builds a bitmask from an array of pin numbers
+ *
+ * Creates an 8-bit bitmask where each bit corresponds to a pin number from the input array.
+ * For each pin number in the array, sets the corresponding bit in the bitmask to 1.
+ *
+ * @param pins      Array of pin numbers (0-7)
+ * @param n         Number of pins in the array
+ * 
+ * @return uint8_t  8-bit bitmask where each '1' represents a pin from the input array
+ *                  Returns 0 if pins is NULL or n is 0
+ * 
+ * @example
+ *   unsigned pins[] = {0, 3, 7};  // Want to set pins 0, 3 and 7
+ *   uint8_t mask = mcp_build_bitmask(pins, 3);
+ *   // mask = 0b10001001 (0x89)
+ */
+uint8_t mcp_build_bitmask(const unsigned *pins, unsigned n);
+
 #define MCP_CFG_SPI_23S08(_bus,_cs,_mode,_speed,_addr,_haen) \
     ((mcp_cfg_t){ .variant=MCP_VARIANT_23S08, .bus=SPI, \
         .u.spi={.bus=_bus,.cs=_cs,.mode=_mode,.speed_hz=_speed,.address=_addr,.haen_enabled=_haen}})

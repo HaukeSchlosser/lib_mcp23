@@ -100,6 +100,7 @@ mcp_close(&dev);
 - `mcp_read_pin()`: Read single pin
 - `mcp_write_pin()`: Write to single pin
 - `mcp_interrupt()`: Configure interrupts
+- `mcp_build_bitbask()`: Builds a bitmask from array of pins
 - `mcp_led()`: Lets all pins blink (convencience method)
 
 ## Error Handling

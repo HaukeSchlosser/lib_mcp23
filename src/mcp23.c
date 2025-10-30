@@ -189,3 +189,14 @@ const mcp_error_t* mcp_get_error(const mcp_dev_t *dev) {
     return &dev->base.last_error;
 
 }
+
+uint8_t mcp_build_bitmask(const unsigned *pins, unsigned n) {
+
+    if (!pins || n == 0) return 0;
+
+    uint8_t m = 0;
+    for (unsigned i = 0; i < n; ++i) {
+        if (pins[i] < 8) m |= (uint8_t)(1u << pins[i]);
+    }
+    return m;
+}
