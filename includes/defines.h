@@ -44,6 +44,8 @@ extern "C" {
 // MCP23 Convenience Commands
 #define MCP_LED_DISABLE         0x00
 #define MCP_LED_ENABLE          0x01
+#define MCP_SET_1               0x01
+#define MCP_SET_0               0x00
 
 #ifdef __cplusplus
 }

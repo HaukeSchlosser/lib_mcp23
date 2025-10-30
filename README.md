@@ -97,11 +97,12 @@ mcp_close(&dev);
 - `mcp_close()`: Close device connection
 - `mcp_read()`: Read from register
 - `mcp_write()`: Write to register
-- `mcp_read_pin()`: Read single pin
-- `mcp_write_pin()`: Write to single pin
+- `mcp_read_bit()`: Read single pin
+- `mcp_write_bit()`: Write to single pin
 - `mcp_interrupt()`: Configure interrupts
-- `mcp_build_bitbask()`: Builds a bitmask from array of pins
 - `mcp_led()`: Lets all pins blink (convencience method)
+- `mcp_build_bitmask`: Builds a bitmask out of array of pins
+- `mcp_write_bits`: Writes a bitmask to a specific register
 
 ## Error Handling
 

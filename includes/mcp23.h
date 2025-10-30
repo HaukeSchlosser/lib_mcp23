@@ -103,23 +103,23 @@ int16_t mcp_read(mcp_dev_t *dev, uint8_t reg);
  *
  * @param dev           Pointer to the MCP23 device handle.
  * @param reg           Register address to write to.
- * @param pin           Pin number to write (0-7).
+ * @param bit           Bit number to write (0-7).
  * @param data          Value to write to the pin (0 or 1).
  * 
  * @return mcp_err_t    Returns MCP_OK on success, or a negative error code on failure.
  */
-mcp_err_t mcp_write_pin(mcp_dev_t *dev, uint8_t reg, uint8_t pin, uint8_t data);
+mcp_err_t mcp_write_bit(mcp_dev_t *dev, uint8_t reg, uint8_t bit, uint8_t data);
 
 /*
  * @brief Reads the value of a specific pin from the MCP23 device.
  * 
  * @param dev       Pointer to the MCP23 device handle.
  * @param reg       Register address to read from.
- * @param pin       Pin number to read (0-7).
+ * @param bit       Bit number to read (0-7).
  * 
  * @return int8_t   The value of the pin (0 or 1), or a negative error code on failure.
  */
-int8_t mcp_read_pin(mcp_dev_t *dev, uint8_t reg, uint8_t pin);
+int8_t mcp_read_bit(mcp_dev_t *dev, uint8_t reg, uint8_t bit);
 
 /**
  * @brief Configures interrupt settings for the MCP23 device.
@@ -170,6 +170,22 @@ const mcp_error_t* mcp_get_error(const mcp_dev_t *dev);
  *   // mask = 0b10001001 (0x89)
  */
 uint8_t mcp_build_bitmask(const unsigned *pins, unsigned n);
+
+/**
+ * @brief Writes specific bits in a register of the MCP23 device.
+ *
+ * This function allows setting or clearing specific bits in a register without
+ * affecting other bits. It reads the current value of the register, modifies
+ * the bits specified by the mask, and writes the updated value back to the register.
+ *
+ * @param dev       Pointer to the MCP23 device handle.
+ * @param reg       Register address to modify.
+ * @param mask      Bitmask specifying which bits to modify (1 = modify, 0 = leave unchanged).
+ * @param set       Value to set for the bits specified in the mask (1 = set bit, 0 = clear bit).
+ * 
+ * @return mcp_err_t    Returns MCP_OK on success, or a negative error code on failure.
+ */
+mcp_err_t mcp_write_bits(mcp_dev_t* dev, const uint8_t reg, uint8_t mask, uint8_t set);
 
 #define MCP_CFG_SPI_23S08(_bus,_cs,_mode,_speed,_addr,_haen) \
     ((mcp_cfg_t){ .variant=MCP_VARIANT_23S08, .bus=SPI, \

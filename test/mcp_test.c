@@ -12,11 +12,13 @@
  * - MCP23009: 8-bit I2C GPIO expander
  *
  * Test operations:
- * - write:     LED blinking demo (all pins and single pin)
- * - read:      Continuous GPIO port and pin reading
- * - interrupt: Interrupt handling demonstration using GPIO line
- * - led:       Simple LED on/off test
- * - error:     Prints error code
+ * - write:         LED blinking demo (all pins and single pin)
+ * - read:          Continuous GPIO port and pin reading
+ * - interrupt:     Interrupt handling demonstration using GPIO line
+ * - led:           Simple LED on/off test
+ * - error:         Prints error code
+ * - bitmask:       Builds and prints a bitmask from an array of pin numbers
+ * - write_bits:    Tests writing individual bits to the GPIO expander
  *
  * Usage:
  *     ./mcp_test <variant> <operation>
@@ -99,11 +101,11 @@ static int mcp23_test_write(mcp_dev_t *dev, const mcp_cfg_t *cfg) {
         usleep(500000);
 
         printf("[mcp23::mcp23_test_write] Blinking pin 0\n");
-        rc = mcp_write_pin(dev, MCP_OLAT, 0, 0);          // pin0 low
+        rc = mcp_write_bit(dev, MCP_OLAT, 0, 0);          // pin0 low
         if (rc < 0) return fail(dev, "write_pin(0,0)", 1);
         usleep(500000);
 
-        rc = mcp_write_pin(dev, MCP_OLAT, 0, 1);          // pin0 high
+        rc = mcp_write_bit(dev, MCP_OLAT, 0, 1);          // pin0 high
         if (rc < 0) return fail(dev, "write_pin(0,1)", 1);
         usleep(500000);
     }
@@ -126,7 +128,7 @@ static int mcp23_test_read(mcp_dev_t *dev, const mcp_cfg_t *cfg) {
         printf("[mcp23::mcp23_test_write] GPIO: 0x%02X\n", (uint8_t)port);
         usleep(500000);
 
-        int pin0 = mcp_read_pin(dev, MCP_GPIO, 0);
+        int pin0 = mcp_read_bit(dev, MCP_GPIO, 0);
         if (pin0 < 0) return fail(dev, "read_pin(0)", 1);
         printf("[mcp23::mcp23_test_write] pin0: %d\n", pin0);
         usleep(500000);
@@ -220,6 +222,42 @@ int8_t mcp_test_error(mcp_dev_t *dev, const mcp_cfg_t *cfg) {
     return 0;
 }
 
+int8_t mcp_test_build_bitmask(mcp_dev_t *dev, const mcp_cfg_t *cfg) {
+    if (mcp_init(dev, cfg) < 0) {
+        return fail(dev, "init", 1);
+    }
+
+    unsigned pins[] = {0, 2, 3, 5};
+    uint8_t bitmask = mcp_build_bitmask(pins, sizeof(pins)/sizeof(pins[0]));
+    printf("Expected: 0x2D -- Result: 0x%02X\n", bitmask);
+    return 0;
+}
+
+int8_t mcp_test_write_bits(mcp_dev_t *dev, const mcp_cfg_t *cfg) {
+    if (mcp_init(dev, cfg) < 0) {
+        return fail(dev, "init", 1);
+    }
+
+    unsigned pins[] = {0, 2, 3, 5};
+    uint8_t bitmask = mcp_build_bitmask(pins, sizeof(pins)/sizeof(pins[0]));
+
+    if (mcp_write(dev, MCP_GPPU, 0x00) < 0) return fail(dev, "GPPU=0x00", 1);
+    if (mcp_write(dev, MCP_OLAT, 0xFF) < 0) return fail(dev, "OLAT=0xFF", 1);
+    if (mcp_write(dev, MCP_IODIR, 0x00) < 0) return fail(dev, "IODIR=0x00", 1);
+
+    for (int i = 0; i < 5; i++) {
+        mcp_err_t rc = mcp_write_bits(dev, MCP_OLAT, bitmask, MCP_SET_1); // Set pins low
+        if (rc < 0) return fail(dev, "write_bits(high)", 1);
+        sleep(1);
+        printf("Toggle #%d: Setting pins high\n", i+1);
+        rc = mcp_write_bits(dev, MCP_OLAT, bitmask, MCP_SET_0); // Set pins high
+        if (rc < 0) return fail(dev, "write_bits(low)", 1);
+        sleep(1);
+    }
+
+    return 0;
+}
+
 static int parse_variant(const char *s, int *out_variant) {
     if (strcmp(s, "mcp23s08") == 0) { *out_variant = MCP_VARIANT_23S08; return 0; }
     if (strcmp(s, "mcp23s09") == 0) { *out_variant = MCP_VARIANT_23S09; return 0; }
@@ -279,6 +317,10 @@ int main(int argc, char *argv[]) {
             return mcp_test_led(&dev, &cfg) == 0 ? 0 : 1;
         } else if (strcmp(op, "error") == 0) {
             return mcp_test_error(NULL, &cfg) == 0 ? 0 : 1;
+        } else if (strcmp(op, "bitmask") == 0) {
+            return mcp_test_build_bitmask(&dev, &cfg) == 0 ? 0 : 1;
+        } else if (strcmp(op, "write_bits") == 0) {
+            return mcp_test_write_bits(&dev, &cfg) == 0 ? 0 : 1;
         } else {
             fprintf(stderr, "[mcp23_test] ERROR: Unknown operation: %s\n", op);
             return 1;

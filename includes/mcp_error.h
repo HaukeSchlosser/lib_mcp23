@@ -13,16 +13,16 @@ typedef struct mcp_dev_base mcp_dev_base_t;
 typedef enum {
     MCP_OK          =  0,
     MCP_EPARAM      = -1,   
-    MCP_ENOTSUP     = -2,     /* Nicht unterstützt / Feature fehlt */
-    MCP_ENODEV      = -3,     /* Gerät nicht gefunden / nicht ansprechbar */
-    MCP_EBUS        = -4,     /* Busfehler (SPI/I2C Rahmenfehler, NACK, etc.) */
-    MCP_ETIMEOUT    = -5,     /* Timeout auf Bus/Waiting */
-    MCP_EIO         = -6,     /* I/O allgemein (read/write/ioctl fehlgeschlagen) */
-    MCP_ESTATE      = -7,     /* Ungültiger Gerätezustand / Reihenfolge */
-    MCP_ECONFIG     = -8,     /* Ungültige/inkonsistente Konfiguration */
-    MCP_ENOMEM      = -9,     /* Speicher erschöpft */
-    MCP_ECRC        = -10,    /* Datenintegritätsfehler (falls relevant) */
-    MCP_EAGAIN_     = -11     /* Temporär nicht verfügbar, erneuter Versuch möglich */
+    MCP_ENOTSUP     = -2,
+    MCP_ENODEV      = -3,
+    MCP_EBUS        = -4,
+    MCP_ETIMEOUT    = -5,
+    MCP_EIO         = -6,
+    MCP_ESTATE      = -7,
+    MCP_ECONFIG     = -8,
+    MCP_ENOMEM      = -9,
+    MCP_ECRC        = -10,
+    MCP_EAGAIN_     = -11
 } mcp_err_t;
 
 typedef struct {

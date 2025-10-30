@@ -93,32 +93,32 @@ int16_t mcp_read(mcp_dev_t *dev, uint8_t reg) {
     }
 }
 
-mcp_err_t mcp_write_pin(mcp_dev_t *dev, uint8_t reg, uint8_t pin, uint8_t data) {
+mcp_err_t mcp_write_bit(mcp_dev_t *dev, uint8_t reg, uint8_t bit, uint8_t data) {
     
     if (!dev) return MCP_EPARAM;
 
     switch (dev->base.variant) {
         case MCP_VARIANT_23S08:
-            return mcp23s08_write_pin(dev->u.s08, reg, pin, data);
+            return mcp23s08_write_pin(dev->u.s08, reg, bit, data);
         case MCP_VARIANT_23S09:
-            return mcp23s09_write_pin(dev->u.s09, reg, pin, data);
+            return mcp23s09_write_pin(dev->u.s09, reg, bit, data);
         case MCP_VARIANT_23009:
-            return mcp23009_write_pin(dev->u.i09, reg, pin, data);
+            return mcp23009_write_pin(dev->u.i09, reg, bit, data);
         default: return MCP_FAIL(dev, MCP_ENOTSUP);
     }
 }
 
-int8_t mcp_read_pin(mcp_dev_t *dev, uint8_t reg, uint8_t pin) {
+int8_t mcp_read_bit(mcp_dev_t *dev, uint8_t reg, uint8_t bit) {
     
     if (!dev) return MCP_EPARAM;
 
     switch (dev->base.variant) {
         case MCP_VARIANT_23S08:
-            return mcp23s08_read_pin(dev->u.s08, reg, pin);
+            return mcp23s08_read_pin(dev->u.s08, reg, bit);
         case MCP_VARIANT_23S09:
-            return mcp23s09_read_pin(dev->u.s09, reg, pin);
+            return mcp23s09_read_pin(dev->u.s09, reg, bit);
         case MCP_VARIANT_23009:
-            return mcp23009_read_pin(dev->u.i09, reg, pin);
+            return mcp23009_read_pin(dev->u.i09, reg, bit);
         default: return MCP_FAIL(dev, MCP_ENOTSUP);
     }
 }
@@ -192,11 +192,37 @@ const mcp_error_t* mcp_get_error(const mcp_dev_t *dev) {
 
 uint8_t mcp_build_bitmask(const unsigned *pins, unsigned n) {
 
-    if (!pins || n == 0) return 0;
+    if (!pins || n == 0) return MCP_EPARAM;
 
     uint8_t m = 0;
     for (unsigned i = 0; i < n; ++i) {
         if (pins[i] < 8) m |= (uint8_t)(1u << pins[i]);
     }
     return m;
+}
+
+mcp_err_t mcp_write_bits(mcp_dev_t* dev, const uint8_t reg, uint8_t mask, uint8_t set) {
+
+    if (!dev)               return MCP_EPARAM;
+    if (dev->base.fd < 0)   return MCP_FAIL(dev, MCP_ESTATE);
+    if (reg > MCP_REG_MAX)  return MCP_FAIL(dev, MCP_EPARAM);
+    if (mask == 0)          return MCP_OK; // Nothing to do
+    if (set != MCP_SET_1 && set != MCP_SET_0)
+                            return MCP_FAIL(dev, MCP_EPARAM);
+
+    int16_t r = mcp_read(dev, reg);
+    if (r < 0) return (mcp_err_t)r;
+
+    uint8_t oldv = (uint8_t)r;
+    uint8_t newv;
+
+    if (set == MCP_SET_1) {
+        newv = (uint8_t)(oldv | mask);
+    } else {
+        newv = (uint8_t)(oldv & (uint8_t)~mask);
+    }
+
+    if (newv == oldv) return MCP_OK;
+
+    return mcp_write(dev, reg, newv);
 }
