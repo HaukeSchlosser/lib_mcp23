@@ -12,7 +12,8 @@ SRCS = \
   $(SRC_DIR)/mcp23s08.c \
   $(SRC_DIR)/mcp23s09.c \
   $(SRC_DIR)/mcp23009.c \
-  $(SRC_DIR)/mcp_spi.c
+  $(SRC_DIR)/mcp_spi.c \
+  $(SRC_DIR)/mcp_error.c
 
 INSTALL_LIB_DIR = /usr/local/lib
 INSTALL_INC_DIR = /usr/local/include/mcp23

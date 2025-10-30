@@ -1,8 +1,8 @@
 #ifndef MCP23S08_H
 #define MCP23S08_H
 
-#include "mcp23.h"
 #include "defines.h"
+#include "mcp23.h"
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -15,11 +15,11 @@ extern "C" {
 #define MCP_08S_READ_CMD    0x01
 
 struct mcp23s08 {
-    int fd;
-    uint32_t speed_hz;
-    uint8_t  haen_enabled;
-    uint8_t  mode;
-    uint8_t  address;
+    mcp_dev_base_t  base;
+    uint32_t        speed_hz;
+    uint8_t         haen_enabled;
+    uint8_t         mode;
+    uint8_t         address;
 };
 
 /**
@@ -33,22 +33,22 @@ struct mcp23s08 {
  * @param address       Address of device
  * @param haen_enabled  If HAEN is enabled
  * 
- * @return int      File descriptor for the opened SPI device, or -1 on failure.
+ * @return mcp_err_t    Returns MCP_OK on success, or a negative error code on failure.
  */
-int mcp23s08_init(mcp23s08_t *dev, uint8_t bus, uint8_t cs, 
+mcp_err_t mcp23s08_init(mcp23s08_t *dev, uint8_t bus, uint8_t cs, 
                  uint8_t spi_mode, uint32_t speed_hz, uint8_t 
                  address, uint8_t haen_enabled);
 
 /**
  * @brief Writes a byte of data to a specified register of the MCP23S08 via SPI.
  *
- * @param dev       Pointer to the MCP23S08 device handle.
- * @param reg       Register address to write to.
- * @param data      Byte of data to write.
+ * @param dev           Pointer to the MCP23S08 device handle.
+ * @param reg           Register address to write to.
+ * @param data          Byte of data to write.
  * 
- * @return int8_t   Returns 0 on success, or -1 on failure.
+ * @return mcp_err_t    Returns MCP_OK on success, or a negative error code on failure.
  */
-int8_t mcp23s08_write(mcp23s08_t *dev, uint8_t reg, uint8_t data);
+mcp_err_t mcp23s08_write(mcp23s08_t *dev, uint8_t reg, uint8_t data);
 
 /**
  * @brief Reads a byte from a specified register of the MCP23S08 via SPI.
@@ -56,21 +56,21 @@ int8_t mcp23s08_write(mcp23s08_t *dev, uint8_t reg, uint8_t data);
  * @param dev       Pointer to the MCP23S08 device handle.
  * @param reg       Register address to read from.
  * 
- * @return int16_t  The received byte from the SPI response, or -1 on failure.
+ * @return int16_t  The received byte from the SPI response, or a negative error code on failure.
  */
 int16_t mcp23s08_read(mcp23s08_t *dev, uint8_t reg);
 
 /**
  * @brief Writes a value to a specific pin of the MCP23S08.
  *
- * @param dev       Pointer to the MCP23S08 device handle.
- * @param reg       Register address to write to.
- * @param pin       Pin number to write (0-7).
- * @param data      Value to write to the pin (0 or 1).
+ * @param dev           Pointer to the MCP23S08 device handle.
+ * @param reg           Register address to write to.
+ * @param pin           Pin number to write (0-7).
+ * @param data          Value to write to the pin (0 or 1).
  * 
- * @return int8_t   Returns 0 on success, or -1 on failure.
+ * @return mcp_err_t    Returns MCP_OK on success, or a negative error code on failure.
  */
-int8_t mcp23s08_write_pin(mcp23s08_t *dev, uint8_t reg, uint8_t pin, uint8_t data);
+mcp_err_t mcp23s08_write_pin(mcp23s08_t *dev, uint8_t reg, uint8_t pin, uint8_t data);
 
 /**
  * @brief Reads the value of a specific pin from the MCP23S08.
@@ -79,7 +79,7 @@ int8_t mcp23s08_write_pin(mcp23s08_t *dev, uint8_t reg, uint8_t pin, uint8_t dat
  * @param reg       Register address to read from.
  * @param pin       Pin number to read (0-7).
  * 
- * @return int8_t   The value of the pin (0 or 1), or -1 on failure.
+ * @return int8_t   The value of the pin (0 or 1), or a negative error code on failure.
  */
 int8_t mcp23s08_read_pin(mcp23s08_t *dev, uint8_t reg, uint8_t pin);
 
@@ -91,19 +91,19 @@ int8_t mcp23s08_read_pin(mcp23s08_t *dev, uint8_t reg, uint8_t pin);
  * @param bitmask           Bitmask specifying which pins to configure for interrupts.
  * @param interrupt_mode    Interrupt mode (MCP_08S_CHANGE_ANY or MCP_08S_COMPARE_DEFVAL).
  * 
- * @return int8_t           Returns 0 on success, or -1 on failure.
+ * @return mcp_err_t        Returns MCP_OK on success, or a negative error code on failure.
  */
-int8_t mcp23s08_interrupt(mcp23s08_t *dev, uint8_t enable, uint8_t bitmask, uint8_t interrupt_mode);
+mcp_err_t mcp23s08_interrupt(mcp23s08_t *dev, uint8_t enable, uint8_t bitmask, uint8_t interrupt_mode);
 
 /**
  * @brief Enables or disables LED on all pins of the MCP23S08.
  *
- * @param dev       Pointer to the MCP23S08 device handle.
- * @param enable    Enable or disable LED (MCP_LED_BLINK_ENABLE or MCP_LED_BLINK_DISABLE).
+ * @param dev           Pointer to the MCP23S08 device handle.
+ * @param enable        Enable or disable LED (MCP_LED_BLINK_ENABLE or MCP_LED_BLINK_DISABLE).
  * 
- * @return int8_t   Returns 0 on success, or -1 on failure.
+ * @return mcp_err_t    Returns MCP_OK on success, or a negative error code on failure.
  */
-int8_t mcp23s08_led(mcp23s08_t *dev, uint8_t enable);
+mcp_err_t mcp23s08_led(mcp23s08_t *dev, uint8_t enable);
 
 #ifdef __cplusplus
 }

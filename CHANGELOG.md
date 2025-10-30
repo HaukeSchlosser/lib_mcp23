@@ -1,5 +1,10 @@
 # Changelog
 
+## [v1.1.0]
+- Add unified error codes
+- Add mcp_led() method
+- Add mcp_get_error method
+
 ## [v1.0.0]
 - Restructure of API
 - Renaming of library

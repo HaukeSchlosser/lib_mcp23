@@ -102,6 +102,51 @@ mcp_close(&dev);
 - `mcp_interrupt()`: Configure interrupts
 - `mcp_led()`: Lets all pins blink (convencience method)
 
+## Error Handling
+
+The library uses a comprehensive error handling system that provides both error codes and detailed error information.
+
+### Error Codes
+
+| Code        | Value | Description |
+|-------------|-------|-------------|
+| MCP_OK      | 0     | Success, no error |
+| MCP_EPARAM  | -1    | Invalid parameter passed to function |
+| MCP_ENOTSUP | -2    | Feature or operation not supported |
+| MCP_ENODEV  | -3    | Device not found or not responding |
+| MCP_EBUS    | -4    | Bus error (SPI/I2C frame error, NACK, etc.) |
+| MCP_ETIMEOUT| -5    | Timeout on bus operation or waiting |
+| MCP_EIO     | -6    | General I/O error (read/write/ioctl failed) |
+| MCP_ESTATE  | -7    | Invalid device state or operation sequence |
+| MCP_ECONFIG | -8    | Invalid or inconsistent configuration |
+| MCP_ENOMEM  | -9    | Memory allocation failed |
+| MCP_ECRC    | -10   | Data integrity error |
+| MCP_EAGAIN  | -11   | Temporarily unavailable, retry might succeed |
+
+### Error Information
+
+Each error contains detailed information:
+- Error code (from above table)
+- System errno (if applicable)
+- Source file and line number
+- Function name
+- Optional error message
+
+### Example Error Handling
+
+```c
+int8_t print_error(mcp_dev_t *dev, const mcp_cfg_t *cfg) {
+    if (mcp_init(dev, cfg) < 0) {
+        mcp_error_t err = mcp_last_error(&(dev->base));
+        fprintf(stderr, "Error: %s (%d) in %s:%d\n",
+                mcp_strerror(err.code), err.code,
+                err.file, err.line);
+        return 1;
+    }
+    return 0;
+}
+```
+
 ## Testing
 
 The project includes a test program demonstrating basic functionality:
@@ -122,6 +167,7 @@ Operations:
 - write: LED blinking demo
 - interrupt: Interrupt handling demo
 - led: Convenience method to let all pins blink
+- error: Prints error
 
 ## Register Map
 

@@ -8,8 +8,6 @@ extern "C" {
 #include <stdint.h>
 #include "defines.h"
 
-// todo: Speed noch vereinheitlichen
-
 struct mcp23s08;  typedef struct mcp23s08 mcp23s08_t;
 struct mcp23s09;  typedef struct mcp23s09 mcp23s09_t;
 struct mcp23009;  typedef struct mcp23009 mcp23009_t;
@@ -20,13 +18,19 @@ typedef enum {
     MCP_VARIANT_23009
 } mcp_variant_t;
 
+struct mcp_dev_base {
+    mcp_error_t   last_error;
+    int           fd;
+    mcp_variant_t variant;
+};
+
 typedef enum { 
     SPI, 
     I2C 
 } mcp_bus_t;
 
 typedef struct mcp_dev {
-    mcp_variant_t variant;
+    mcp_dev_base_t base;
     union {
         mcp23s08_t *s08;
         mcp23s09_t *s09;
@@ -60,29 +64,29 @@ typedef struct {
  * @param dev           Pointer to the MCP23 device handle.
  * @param cfg           Pointer to the configuration structure.
  * 
- * @return int      File descriptor for the opened device, or -1 on failure.
+ * @return mcp_err_t    Returns MCP_OK on success, or a negative error code on failure.
  */
-int     mcp_init(mcp_dev_t *dev, const void *cfg);
+mcp_err_t mcp_init(mcp_dev_t *dev, const void *cfg);
 
 /**
  * @brief Closes the device file associated with the MCP23 device.
  *
- * @param dev       Pointer to the MCP23 device handle.
+ * @param dev           Pointer to the MCP23 device handle.
  * 
- * @return int8_t   Returns 0 on success, or -1 on failure.
+ * @return mcp_err_t    Returns MCP_OK on success, or a negative error code on failure.
  */
-int8_t  mcp_close(mcp_dev_t *dev);
+mcp_err_t mcp_close(mcp_dev_t *dev);
 
 /**
  * @brief Writes a byte of data to a specified register of the MCP23 device.
  *
- * @param dev       Pointer to the MCP23 device handle.
- * @param reg       Register address to write to.
- * @param data      Byte of data to write.
+ * @param dev           Pointer to the MCP23 device handle.
+ * @param reg           Register address to write to.
+ * @param data          Byte of data to write.
  * 
- * @return int8_t   Returns 0 on success, or -1 on failure.
+ * @return mcp_err_t    Returns MCP_OK on success, or a negative error code on failure.
  */
-int8_t  mcp_write(mcp_dev_t *dev, uint8_t reg, uint8_t data);
+mcp_err_t mcp_write(mcp_dev_t *dev, uint8_t reg, uint8_t data);
 
 /**
  * @brief Reads a byte from a specified register of the MCP23 device.
@@ -90,21 +94,21 @@ int8_t  mcp_write(mcp_dev_t *dev, uint8_t reg, uint8_t data);
  * @param dev       Pointer to the MCP23 device handle.
  * @param reg       Register address to read from.
  * 
- * @return int16_t  The received byte from the device, or -1 on failure.
+ * @return int16_t  The received byte from the device, or a negative error code on failure.
  */
 int16_t mcp_read(mcp_dev_t *dev, uint8_t reg);
 
 /**
  * @brief Writes a value to a specific pin of the MCP23 device.
  *
- * @param dev       Pointer to the MCP23 device handle.
- * @param reg       Register address to write to.
- * @param pin       Pin number to write (0-7).
- * @param data      Value to write to the pin (0 or 1).
+ * @param dev           Pointer to the MCP23 device handle.
+ * @param reg           Register address to write to.
+ * @param pin           Pin number to write (0-7).
+ * @param data          Value to write to the pin (0 or 1).
  * 
- * @return int8_t   Returns 0 on success, or -1 on failure.
+ * @return mcp_err_t    Returns MCP_OK on success, or a negative error code on failure.
  */
-int8_t  mcp_write_pin(mcp_dev_t *dev, uint8_t reg, uint8_t pin, uint8_t data);
+mcp_err_t mcp_write_pin(mcp_dev_t *dev, uint8_t reg, uint8_t pin, uint8_t data);
 
 /*
  * @brief Reads the value of a specific pin from the MCP23 device.
@@ -113,9 +117,9 @@ int8_t  mcp_write_pin(mcp_dev_t *dev, uint8_t reg, uint8_t pin, uint8_t data);
  * @param reg       Register address to read from.
  * @param pin       Pin number to read (0-7).
  * 
- * @return int8_t   The value of the pin (0 or 1), or -1 on failure.
+ * @return int8_t   The value of the pin (0 or 1), or a negative error code on failure.
  */
-int8_t  mcp_read_pin(mcp_dev_t *dev, uint8_t reg, uint8_t pin);
+int8_t mcp_read_pin(mcp_dev_t *dev, uint8_t reg, uint8_t pin);
 
 /**
  * @brief Configures interrupt settings for the MCP23 device.
@@ -125,19 +129,28 @@ int8_t  mcp_read_pin(mcp_dev_t *dev, uint8_t reg, uint8_t pin);
  * @param bitmask           Bitmask specifying which pins to configure for interrupts.
  * @param interrupt_mode    Interrupt mode (MCP_CHANGE_ANY or MCP_COMPARE_DEFVAL).
  * 
- * @return int8_t   Returns 0 on success, or -1 on failure.
+ * @return mcp_err_t        Returns MCP_OK on success, or a negative error code on failure.
  */
-int8_t mcp_interrupt(mcp_dev_t *dev, uint8_t enable, uint8_t bitmask, uint8_t interrupt_mode);
+mcp_err_t mcp_interrupt(mcp_dev_t *dev, uint8_t enable, uint8_t bitmask, uint8_t interrupt_mode);
 
 /**
  * @brief Enables or disables LED on all pins of the MCP23 device.
  *
- * @param dev       Pointer to the MCP23 device handle.
- * @param enable    Enable or disable LED (MCP_LED_ENABLE or MCP_LED_DISABLE).
+ * @param dev           Pointer to the MCP23 device handle.
+ * @param enable        Enable or disable LED (MCP_LED_ENABLE or MCP_LED_DISABLE).
  * 
- * @return int8_t   Returns 0 on success, or -1 on failure.
+ * @return mcp_err_t    Returns MCP_OK on success, or a negative error code on failure.
  */
-int8_t mcp_led(mcp_dev_t *dev, uint8_t enable);
+mcp_err_t mcp_led(mcp_dev_t *dev, uint8_t enable);
+
+/*
+ * @brief Retrieves the last error code for the MCP23 device.
+ *
+ * @param dev           Pointer to the MCP23 device handle.
+ * 
+ * @return mcp_err_t    The last error code of the device, or NULL on failure.
+ */
+const mcp_error_t* mcp_get_error(const mcp_dev_t *dev);
 
 #define MCP_CFG_SPI_23S08(_bus,_cs,_mode,_speed,_addr,_haen) \
     ((mcp_cfg_t){ .variant=MCP_VARIANT_23S08, .bus=SPI, \

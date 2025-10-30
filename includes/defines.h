@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include "mcp_error.h"
+
 // Speed Defines
 #define MCP_I2C_SPEED_SLOW      100000u     // 100 kHz
 #define MCP_I2C_SPEED_DEFAULT   400000u     // 400 kHz

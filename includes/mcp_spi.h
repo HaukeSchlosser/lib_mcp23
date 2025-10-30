@@ -16,7 +16,7 @@ extern "C" {
  * @param rx_buf    Pointer to the receive buffer (data received).
  * @param len       Length of the data to be transmitted/received (in bytes).
  *
- * @return int      Returns 0 on success, or -1 if the ioctl call fails.
+ * @return int      Number of bytes transferred on success, or a negative error code on failure.
  */
 int mcp23_spi_transfer(int fd, uint8_t *tx_buf, uint8_t *rx_buf, unsigned int len);
 
